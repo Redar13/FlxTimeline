@@ -81,11 +81,14 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 		paused = finished = false;
 
 		if (Time < 0)
+		{
 			animTime = FlxG.random.float(0, animLength);
+		}
 		else
 		{
-			Time = FlxMath.clamp(Time, 0, animLength);
-			animTime = reversed ? animLength - Time : Time; 
+			if (Time < 0)			Time = 0;
+			else if (Time > animLength)	time = animLength;
+			animTime = (reversed ? animLength - Time : Time); 
 		}
 	}
 	public function restart():Void
@@ -110,8 +113,14 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 		animTime = (reversed ? 0 : animLength);
 	}
 
-	public inline function pause():Void  paused = true;
-	public inline function resume():Void paused = false;
+	public inline function pause():Void
+	{
+		paused = true;
+	}
+	public inline function resume():Void
+	{
+		paused = false;
+	}
 	
 	public function reverse():Void
 	{
@@ -122,15 +131,19 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 
 
 	public inline function addSetEvent(time:Float, action:SetEvent->Void, ?duration:Null<Float>, ?repeatTimes:Null<Int>, ?tag:String):SetEvent
+	{
 		return addEvent(new SetEvent(this, time, action, duration == null ? 0 : duration, repeatTimes == null ? 1 : repeatTimes, tag));
+	}
 	
-
 	public inline function addTweenEvent(time:Float, object:Null<Dynamic>, properties:Null<Dynamic>, duration:Float, ?options:TweenEventOptions, ?tag:String):VarTweenEvent
+	{
 		return addEvent(new VarTweenEvent(this, time, object, properties, duration, options, tag));
-	
+	}
 
 	public inline function addNumTweenEvent(time:Float, fromValue:Float, toValue:Float, duration:Float, tweenFunction:Float->Void, ?options:TweenEventOptions, ?tag:String):NumTweenEvent
+	{
 		return addEvent(new NumTweenEvent(this, time, fromValue, toValue, duration, tweenFunction, options, tag));
+	}
 	
 	public function addEvent<E:FlxEvent>(Event:E):E
 	{
@@ -178,8 +191,9 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 	}
 	
 	public inline function getFirstEvent():Null<FlxEvent>
+	{
 		return events[0];
-	
+	}
 
 	public function findLastEvent(Name:Null<String>):Null<FlxEvent>
 	{
@@ -196,12 +210,14 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 		return null;
 	}
 	public inline function getLastEvent():Null<FlxEvent>
+	{
 		return events[events.length - 1];
-	
+	}
 
 	public inline function getEvents(Name:Null<String>):Array<FlxEvent>
+	{
 		return events.filter(event -> event != null && event.tag == Name);
-	
+	}
 
 	public function getEventsAtTimes(?StartTime:Null<Float>, ?EndTime:Null<Float>):Array<FlxEvent>
 	{
@@ -389,7 +405,8 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 	}
 	
 
-	inline function _updateEvents(time:Float) {
+	inline function _updateEvents(time:Float)
+	{
 		if (events.length != 0)
 			events[0]._updateWithNextEvent(time);
 	}
@@ -458,7 +475,6 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 	{
 		return !paused;
 	}
-
 	inline function set_playing(i:Bool):Bool
 	{
 		return paused = !i;
@@ -488,12 +504,14 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 		updateTimeline(i, forseUpdate);
 		return __curTime;
 	}
+
 	function set_animLength(i:Float):Float
 	{
 		if (i < 0)
 			i = FlxMath.MAX_VALUE_FLOAT + i;
 		return animLength = i;
 	}
+
 	function set_framerate(i:Float):Float
 	{
 		if (i < 0)
