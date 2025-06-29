@@ -42,9 +42,9 @@ timeline.removeChild("Child Timeline");
 
 ## Installation 
 
-1. First, run the following command in a terminal: `haxelib git flxtimeline https://github.com/Redar13/FlxTimeline`
-    <!-- - For the latest stable version: `haxelib install flxtimeline` TODO -->
-    <!-- - For the latest development: `haxelib git flxtimeline https://github.com/Redar13/FlxTimeline`. -->
+1. First, run the following command in a terminal:
+   - For the latest stable version: `haxelib install flxtimeline`
+   - For the latest development: `haxelib git flxtimeline https://github.com/Redar13/FlxTimeline`.
 
 2. Include the library in your Project.xml: `<haxelib name="flxtimeline" />`
 
