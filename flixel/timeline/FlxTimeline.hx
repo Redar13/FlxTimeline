@@ -230,7 +230,8 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 	public inline function forEachEvents(Job:FlxEvent->Void):Void
 	{
 		for (event in events)
-			if (event != null) Job(event);
+			if (event != null)
+				Job(event);
 	}
 
 
