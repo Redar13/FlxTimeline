@@ -87,7 +87,7 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 		else
 		{
 			if (Time < 0)			Time = 0;
-			else if (Time > animLength)	time = animLength;
+			else if (Time > animLength)	Time = animLength;
 			animTime = (reversed ? animLength - Time : Time); 
 		}
 	}
