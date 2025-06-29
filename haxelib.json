@@ -1,0 +1,13 @@
+{
+    "name": "flxtimeline",
+    "url": "https://github.com/Redar13/flxtimeline/",
+    "license": "MIT",
+    "tags": ["flixel", "animation", "timeline"],
+    "description": "Dynamic timeline for HaxeFlixel.",
+    "version": "0.1.0",
+    "releasenote": "First release.",
+    "contributors": ["Redar13"],
+    "dependencies": {
+        "flixel": ""
+    }
+}
