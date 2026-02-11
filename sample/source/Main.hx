@@ -8,10 +8,10 @@ class Main
 	{
 		var stage = Lib.current.stage;
 
-	    // var framerate:Int = 360;
+	    var framerate:Int = 360;
 	    // var framerate:Int = 240;
 	    // var framerate:Int = 144;
-	    var framerate:Int = 60;
+	    // var framerate:Int = 60;
 		#if html5
 		framerate = 60;
 		#end

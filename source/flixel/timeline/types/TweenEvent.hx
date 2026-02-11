@@ -6,16 +6,19 @@ import flixel.tweens.FlxEase;
 import flixel.math.FlxMath;
 import flixel.util.FlxArrayUtil;
 
+using flixel.timeline.internal.Tools;
+
 // TODO: Improve support reversed time
 
+@:nullSafety
 class TweenEvent extends FlxEvent
 {
 	public var ease:EaseFunction;
-	public var scale(default, null):Float;
-	public var onStart:TweenCallback;
-	public var onUpdate:TweenCallback;
-	public var onComplete:TweenCallback;
-	public var backward:Bool;
+	public var scale(default, null):Float = 0;
+	public var onStart:Null<TweenCallback>;
+	public var onUpdate:Null<TweenCallback>;
+	public var onComplete:Null<TweenCallback>;
+	public var backward:Bool = false;
 
 	var _prevPercent:Float = -1;
 
@@ -37,35 +40,30 @@ class TweenEvent extends FlxEvent
 		}
 	}
 
-	public function updateByTime(time:Float)
+	public override function updateByTime(time:Float)
 	{
 		var isActivated = time >= startTime && time < endTime;
-		// var newPercent = FlxMath.bound((time - startTime) / duration, 0.0, 1.0);
-		var newPercent = (time - startTime) / duration;
-		if (!fired && !FlxMath.equal(_prevPercent, newPercent))
+		var newPercent = ((time - startTime) / duration).clamp(0.0, 1.0);
+		if (_prevPercent != newPercent)
 		{
 			var prevActive = _active;
 			_active = isActivated;
 			if (prevActive || isActivated)
 			{
-				scale = ease(FlxMath.bound(newPercent, 0, 1));
-				if (backward) 
+				scale = ease(newPercent);
+				if (backward)
 					scale = 1 - scale;
 			}
+
 			if (!prevActive && isActivated)
-			{
 				_start(_prevPercent < newPercent);
-			}
 
 			if (prevActive || isActivated)
-			{
 				_update();
-			}
 
 			if (prevActive && !isActivated)
-			{
 				_complete();
-			}
+
 			_prevPercent = newPercent;
 		}
 		else
@@ -77,25 +75,19 @@ class TweenEvent extends FlxEvent
 	function _start(setupValues:Bool = true)
 	{
 		if (onStart != null)
-		{
 			onStart(this);
-		}
 	}
 
 	function _update()
 	{
 		if (onUpdate != null)
-		{
 			onUpdate(this);
-		}
 	}
 
 	function _complete()
 	{
 		if (onComplete != null)
-		{
 			onComplete(this);
-		}
 	}
 }
 

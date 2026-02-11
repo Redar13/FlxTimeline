@@ -4,6 +4,9 @@ import flixel.math.FlxMath;
 import flixel.timeline.FlxEvent;
 import flixel.timeline.FlxTimeline;
 
+using flixel.timeline.internal.Tools;
+
+@:nullSafety
 class SetEvent extends FlxEvent
 {
 	public var action:SetEvent->Void;
@@ -18,27 +21,25 @@ class SetEvent extends FlxEvent
 		this.action = action;
 	}
 
-	public function updateByTime(time:Float)
+	public override function updateByTime(time:Float)
 	{
-		final isZeroDuraction = FlxMath.equal(duration, 0.0);
-		if (time >= startTime && (isZeroDuraction || time < endTime) && (!isZeroDuraction || _nextEvent == null || time < _nextEvent.startTime))
+		final isZeroDuraction = (duration == 0);
+		if (time >= startTime && (isZeroDuraction || time < endTime) && @:nullSafety(Off)(!isZeroDuraction || _nextEvent == null || time < _nextEvent.startTime))
 		{
-			var percent:Float = isZeroDuraction ? ((time - startTime) > 0 ? 1 : 0) : FlxMath.bound((time - startTime) / duration, 0.0, 1.0);
+			var percent:Float = isZeroDuraction ? ((time - startTime) > 0 ? 1 : 0) : ((time - startTime) / duration).clamp(0.0, 1.0);
 			var nextTime = Math.floor(percent * (totalRepeatTimes + 1));
 			var left = nextTime - repeatTime;
 			if (_forse || left != 0)
 			{
 				_forse = false;
 				if (left == 0)
-				{
 					action(this);
-				}
-				else 
+				else
 				{
-					var elp:Int = FlxMath.signOf(left);
+					var delt:Int = FlxMath.signOf(left);
 					do {
-						repeatTime += elp;
-						left -= elp;
+						repeatTime += delt;
+						left -= delt;
 						action(this);
 					} while(left != 0);
 				}
@@ -50,6 +51,8 @@ class SetEvent extends FlxEvent
 			_forse = true;
 		}
 	}
+
+	@:nullSafety(Off)
 	override function destroy():Void
 	{
 		super.destroy();

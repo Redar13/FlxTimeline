@@ -68,16 +68,16 @@ class PlayState extends FlxState {
 			camera.bgColor = FlxColor.RED;
 		});
 
-		topBarTimeline.addTweenEvent(0.0,					topBar,		{y: -280, angle: 0},			getTimeByFrame(20),	{ease: FlxEase.cubeOut});
-		bottomBarTimeline.addTweenEvent(0.0,				bottomBar,	{y: 640, angle: 0},				getTimeByFrame(20),	{ease: FlxEase.cubeOut});
-		topBarTimeline.addTweenEvent(getTimeByFrame(40),	topBar,		{y: -280 + 60, angle: 10.0},	getTimeByFrame(20),	{ease: FlxEase.quadInOut});
-		bottomBarTimeline.addTweenEvent(getTimeByFrame(40),	bottomBar,	{y: 640 - 60, angle: 10.0},		getTimeByFrame(20),	{ease: FlxEase.quadInOut});
-		topBarTimeline.addTweenEvent(getTimeByFrame(80),	topBar,		{y: -280 + 120, angle: -10.0},	getTimeByFrame(20),	{ease: FlxEase.quadInOut});
-		bottomBarTimeline.addTweenEvent(getTimeByFrame(80),	bottomBar,	{y: 640 - 120, angle: -10.0},	getTimeByFrame(20),	{ease: FlxEase.quadInOut});
-		topBarTimeline.addTweenEvent(getTimeByFrame(114),	topBar,		{y: -280, angle: 0}, 			getTimeByFrame(10),	{ease: FlxEase.quadOut});
-		bottomBarTimeline.addTweenEvent(getTimeByFrame(114),bottomBar,  {y: 640, angle: 0},				getTimeByFrame(10),	{ease: FlxEase.quadOut});
-		topBarTimeline.addTweenEvent(getTimeByFrame(124),	topBar,		{y: 0, angle: 0},				getTimeByFrame(30),	{ease: FlxEase.bounceOut});
-		bottomBarTimeline.addTweenEvent(getTimeByFrame(124),bottomBar,  {y: 360, angle: 0},				getTimeByFrame(30),	{ease: FlxEase.bounceOut});
+		bottomBarTimeline.addTweenEvent(0.0,					bottomBar,	{y: 640, angle: 0},				getTimeByFrame(20),	{ease: FlxEase.cubeOut});
+		bottomBarTimeline.addTweenEvent(getTimeByFrame(40),		bottomBar,	{y: 640 - 60, angle: 10.0},		getTimeByFrame(20),	{ease: FlxEase.quadInOut});
+		bottomBarTimeline.addTweenEvent(getTimeByFrame(80),		bottomBar,	{y: 640 - 120, angle: -10.0},	getTimeByFrame(20),	{ease: FlxEase.quadInOut});
+		bottomBarTimeline.addTweenEvent(getTimeByFrame(114),	bottomBar,  {y: 640, angle: 0},				getTimeByFrame(10),	{ease: FlxEase.quadOut});
+		bottomBarTimeline.addTweenEvent(getTimeByFrame(124),	bottomBar,  {y: 360, angle: 0},				getTimeByFrame(30),	{ease: FlxEase.bounceOut});
+		topBarTimeline.addTweenEvent(0.0,						topBar,		{y: -280, angle: 0},			getTimeByFrame(20),	{ease: FlxEase.cubeOut});
+		topBarTimeline.addTweenEvent(getTimeByFrame(40),		topBar,		{y: -280 + 60, angle: 10.0},	getTimeByFrame(20),	{ease: FlxEase.quadInOut});
+		topBarTimeline.addTweenEvent(getTimeByFrame(80),		topBar,		{y: -280 + 120, angle: -10.0},	getTimeByFrame(20),	{ease: FlxEase.quadInOut});
+		topBarTimeline.addTweenEvent(getTimeByFrame(114),		topBar,		{y: -280, angle: 0}, 			getTimeByFrame(10),	{ease: FlxEase.quadOut});
+		topBarTimeline.addTweenEvent(getTimeByFrame(124),		topBar,		{y: 0, angle: 0},				getTimeByFrame(30),	{ease: FlxEase.bounceOut});
 
 		timeline.play();
 		// timeline.getTime = () -> FlxG.mouse.x / FlxG.width * timeline.animLength;

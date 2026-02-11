@@ -35,7 +35,7 @@
 	<!-- _______________________________ Libraries ______________________________ -->
 
 	<haxelib name="flixel" />
-	<haxelib name="flxtimeline" path="../../" />
+	<haxelib name="flxtimeline" path="../" />
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 

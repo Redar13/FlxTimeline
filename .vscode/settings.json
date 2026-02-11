@@ -1,0 +1,10 @@
+{
+	"editor.detectIndentation": false,
+	"editor.insertSpaces": false,
+	"editor.tabSize": 4,
+	"editor.trimAutoWhitespace": true,
+	"files.eol": "\n",
+	"files.trimTrailingWhitespace": true,
+	"haxecheckstyle.codeSimilarityBufferSize": 100,
+	"haxe.importsSortOrder": "all-alphabetical"
+}

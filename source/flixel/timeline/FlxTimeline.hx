@@ -13,25 +13,27 @@ import flixel.util.FlxSort;
 import flixel.util.FlxStringUtil;
 
 using StringTools;
+using flixel.timeline.internal.Tools;
 
+@:nullSafety
 class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 {
 	public var name:String;
 
 	public var getTime:Null<Void->Float> = null;
 	public var animTime(get, set):Float;
-	public var animLength(default, set):Float;
+	public var animLength(default, set):Float = FlxMath.MAX_VALUE_FLOAT;
 	public var timescale:Float = 1.0;
 	public var loopPoint:Float = 0.0;
 	public var percent(get, set):Float;
-	public var framerate(default, set):Float;
+	public var framerate(default, set):Float = 1 / FlxMath.EPSILON;
 	public var curFrame(get, set):Int;
 	public var numFrames(get, never):Int;
 	public var forseUpdate:Bool = false;
 
-	public final onFinish = new FlxTypedSignal<FlxTimeline->Void>();
-	public final onLoop = new FlxTypedSignal<FlxTimeline->Void>();
-	public final onFrameChange = new FlxTypedSignal<(instance:FlxTimeline, frameNumber:Int)->Void>();
+	public var onFinish:FlxTypedSignal<FlxTimeline->Void> = new FlxTypedSignal();
+	public var onLoop:FlxTypedSignal<FlxTimeline->Void> = new FlxTypedSignal();
+	public var onFrameChange:FlxTypedSignal<(instance:FlxTimeline, frameNumber:Int)->Void> = new FlxTypedSignal();
 
 	public var playing(get, set):Bool;
 	public var paused:Bool = true;
@@ -39,17 +41,15 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 	public var looped:Bool = false;
 	public var reversed:Bool = false;
 
-	public var events:Array<FlxEvent> = [];
-
 	public var parent(default, null):Null<FlxTimeline> = null;
+
+	var _events:Array<FlxEvent> = [];
 
 	var _dirtyEventsSort:Bool = false;
 
 	var __curTime:Float = 0;
 	@:noCompletion var __prevTime:Float = -1;
 	@:noCompletion var __prevFrameTime:Float = -1;
-	@:noCompletion var __dispatchFinish:Bool = false;
-	@:noCompletion var __dispatchLoop:Bool = false;
 
 	public function new(MaxSize:Int = 0, ?Name:String)
 	{
@@ -59,8 +59,6 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 		else
 			this.name = 'Unnamed($ID)';
 		visible = false;
-		framerate = -1;
-		animLength = -1;
 	}
 
 	public inline function sortEvents()
@@ -86,9 +84,11 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 		}
 		else
 		{
-			if (Time < 0)			Time = 0;
-			else if (Time > animLength)	Time = animLength;
-			animTime = (reversed ? animLength - Time : Time); 
+			if (Time > animLength)
+				Time = animLength;
+			if (reversed)
+				Time = animLength - Time;
+			animTime = Time;
 		}
 	}
 	public function restart():Void
@@ -121,7 +121,7 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 	{
 		paused = false;
 	}
-	
+
 	public function reverse():Void
 	{
 		reversed = !reversed;
@@ -134,7 +134,7 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 	{
 		return addEvent(new SetEvent(this, time, action, duration == null ? 0 : duration, repeatTimes == null ? 1 : repeatTimes, tag));
 	}
-	
+
 	public inline function addTweenEvent(time:Float, object:Null<Dynamic>, properties:Null<Dynamic>, duration:Float, ?options:TweenEventOptions, ?tag:String):VarTweenEvent
 	{
 		return addEvent(new VarTweenEvent(this, time, object, properties, duration, options, tag));
@@ -144,16 +144,16 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 	{
 		return addEvent(new NumTweenEvent(this, time, fromValue, toValue, duration, tweenFunction, options, tag));
 	}
-	
+
 	public function addEvent<E:FlxEvent>(Event:E):E
 	{
 		_dirtyEventsSort = true;
-		events.push(Event);
+		_events.push(Event);
 		return Event;
 	}
 	public function removeEvent<E:FlxEvent>(Event:E):E
 	{
-		if (events.remove(Event))
+		if (_events.remove(Event))
 			_dirtyEventsSort = true;
 		return Event;
 	}
@@ -180,30 +180,31 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 	{
 		var i:Int = 0;
 		var event;
-		while (i < events.length) {
-			event = events[i++];
+		while (i < _events.length) {
+			event = _events[i++];
 			if (event != null && event.tag == Name)
 			{
-				return events[i];
+				return _events[i];
 			}
 		}
 		return null;
 	}
-	
+
 	public inline function getFirstEvent():Null<FlxEvent>
 	{
-		return events[0];
+		return _events[0];
 	}
 
 	public function findLastEvent(Name:Null<String>):Null<FlxEvent>
 	{
-		var i:Int = events.length - 1;
+		var i:Int = _events.length - 1;
 		var event;
-		while (i >= 0) {
-			event = events[i];
+		while (i >= 0)
+		{
+			event = _events[i];
 			if (event != null && event.tag == Name)
 			{
-				return events[i];
+				return _events[i];
 			}
 			i--;
 		}
@@ -211,25 +212,25 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 	}
 	public inline function getLastEvent():Null<FlxEvent>
 	{
-		return events[events.length - 1];
+		return _events[_events.length - 1];
 	}
 
 	public inline function getEvents(Name:Null<String>):Array<FlxEvent>
 	{
-		return events.filter(event -> event != null && event.tag == Name);
+		return _events.filter(event -> event != null && event.tag == Name);
 	}
 
 	public function getEventsAtTimes(?StartTime:Null<Float>, ?EndTime:Null<Float>):Array<FlxEvent>
 	{
 		return if (StartTime == null && EndTime == null)
-			events.copy();
+			_events.copy();
 		else
-			events.filter(event -> event != null && (FlxMath.inBounds(event.startTime, StartTime, EndTime) || FlxMath.inBounds(event.endTime, StartTime, EndTime)));
+			_events.filter(event -> event != null && (FlxMath.inBounds(event.startTime, StartTime, EndTime) || FlxMath.inBounds(event.endTime, StartTime, EndTime)));
 	}
 
 	public inline function forEachEvents(Job:FlxEvent->Void):Void
 	{
-		for (event in events)
+		for (event in _events)
 			if (event != null)
 				Job(event);
 	}
@@ -306,8 +307,6 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 		if (getTime != null)
 		{
 			var time = getTime();
-			// if (parent == null)
-			// 	time *= timescale;
 			if (reversed)
 				time = animLength - time;
 			animTime = time;
@@ -315,20 +314,19 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 		else if (parent != null || playing && !finished)
 		{
 			if (reversed)
-				elapsed = -elapsed; 
+				elapsed = -elapsed;
 			if (parent == null)
 				elapsed *= timescale;
 			animTime += elapsed;
 		}
 	}
 
-	static inline function mod(a:Float, b:Float):Float
-	{
-		return a - b * Math.ffloor(a / b);
-	}
+	@:noCompletion var __dispatchFinish:Bool = false;
+	@:noCompletion var __dispatchLoop:Bool = false;
+
 	public function updateTimeline(time:Float, forse:Bool = false)
 	{
-		if (!forse && FlxMath.equal(__curTime, time)) return;
+		if (!forse && __curTime == time) return;
 		__curTime = time;
 		if (looped)
 		{
@@ -336,10 +334,7 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 			{
 				if (__curTime < loopPoint)
 				{
-					__curTime = mod(__curTime, animLength - loopPoint) + loopPoint;
-					// do {
-					// 	__curTime += animLength - loopPoint;
-					// } while(__curTime < loopPoint);
+					__curTime = __curTime.mod(Math.max(animLength - loopPoint, 0)) + loopPoint;
 					__dispatchLoop = true;
 				}
 			}
@@ -347,10 +342,7 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 			{
 				if (__curTime >= animLength)
 				{
-					__curTime = mod(__curTime, animLength);
-					// do {
-					// 	__curTime -= animLength - loopPoint;
-					// } while(__curTime > animLength);
+					__curTime = __curTime.mod(animLength);
 					__dispatchLoop = true;
 				}
 			}
@@ -404,22 +396,22 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 			}
 		}
 	}
-	
+
 
 	inline function _updateEvents(time:Float)
 	{
-		if (events.length != 0)
-			events[0]._updateWithNextEvent(time);
+		if (_events.length != 0)
+			_events[0]._updateWithNextEvent(time);
 	}
 
 	function _sortEvents()
 	{
 		if (!_dirtyEventsSort) return;
 		_dirtyEventsSort = false;
-		events.sort(sortEventsMethod);
+		_events.sort(sortEventsMethod);
 		var i:Int = 0;
-		while (i < events.length) {
-			events[i]._nextEvent = events[i+1];
+		while (i < _events.length) {
+			_events[i]._nextEvent = _events[i+1];
 			i++;
 		}
 	}
@@ -429,7 +421,7 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 		member.parent = this;
 		super.onMemberAdd(member);
 	}
-	
+
 	override function onMemberRemove(member:FlxTimeline)
 	{
 		if (member.parent == this)
@@ -437,13 +429,17 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 		super.onMemberRemove(member);
 	}
 
-	override function destroy()
+	@:nullSafety(Off)
+	override function destroy():Void
 	{
 		super.destroy();
 		FlxDestroyUtil.destroy(onFrameChange);
 		FlxDestroyUtil.destroy(onFinish);
 		FlxDestroyUtil.destroy(onLoop);
-		events = FlxDestroyUtil.destroyArray(events);
+		onFrameChange = null;
+		onFinish = null;
+		onLoop = null;
+		_events = FlxDestroyUtil.destroyArray(_events);
 		parent = null;
 	}
 
@@ -464,7 +460,7 @@ class FlxTimeline extends FlxTypedGroup<FlxTimeline>
 
 	inline function get_percent():Float
 	{
-		return FlxMath.remapToRange(animTime, 0, animLength, 0, 1);
+		return animTime / animLength;
 	}
 	inline function set_percent(i:Float):Float
 	{

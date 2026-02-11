@@ -7,6 +7,7 @@ import flixel.tweens.FlxEase;
 import flixel.math.FlxMath;
 import flixel.util.FlxArrayUtil;
 
+@:nullSafety
 class VarTweenEvent extends TweenEvent // todo: improve time rewind
 {
 	var _object:Null<Dynamic>;
@@ -26,16 +27,17 @@ class VarTweenEvent extends TweenEvent // todo: improve time rewind
 		_setStartValues();
 	}
 
+	@:nullSafety(Off)
 	function _initializeVars():Void
 	{
-		_propertyInfos.splice(0, _propertyInfos.length - 1);
+		_propertyInfos.resize(0);
 		if (Reflect.isObject(_properties))
 		{
 			for (fieldPath in Reflect.fields(_properties))
 			{
 				var target = _object;
 				var path = fieldPath.split(".");
-				var field = path.pop();
+				var field:String = path.pop();
 				for (component in path)
 				{
 					target = Reflect.getProperty(target, component);
@@ -50,7 +52,7 @@ class VarTweenEvent extends TweenEvent // todo: improve time rewind
 					continue;
 
 				#if !js
-				var setter:Float->Float = cast Reflect.field(target, 'set_$field');
+				var setter:Null<Float->Float> = Reflect.field(target, 'set_$field');
 				#end
 				_propertyInfos.push({
 					object: target,
@@ -58,7 +60,7 @@ class VarTweenEvent extends TweenEvent // todo: improve time rewind
 					#if js
 					setter: Reflect.setProperty.bind(target, field, _),
 					#else
-					setter: setter == null ? Reflect.setField.bind(target, field, _) : setter,
+					setter: (setter == null ? Reflect.setField.bind(target, field, _) : setter),
 					#end
 					startValue: Reflect.getProperty(target, field),
 					range: Reflect.getProperty(_properties, fieldPath)
@@ -78,7 +80,7 @@ class VarTweenEvent extends TweenEvent // todo: improve time rewind
 
 	override function _update()
 	{
-		if (_propertyInfos.length > 0)
+		if (_propertyInfos.length != 0)
 			for (info in _propertyInfos)
 				// Reflect.setProperty(info.object, info.field, info.startValue + info.range * scale);
 				info.setter(info.startValue + info.range * scale);
@@ -106,6 +108,7 @@ class VarTweenEvent extends TweenEvent // todo: improve time rewind
 		}
 	}
 
+	@:nullSafety(Off)
 	override function destroy():Void
 	{
 		super.destroy();
@@ -116,11 +119,12 @@ class VarTweenEvent extends TweenEvent // todo: improve time rewind
 	}
 }
 
-private typedef TweenProperty =
+@:structInit
+class TweenProperty
 {
-	object:Dynamic,
-	field:String,
-	setter:Float->Void,
-	startValue:Float,
-	range:Float
+	public var object:Dynamic;
+	public var field:String;
+	public var setter:Float->Void;
+	public var startValue:Float;
+	public var range:Float;
 }

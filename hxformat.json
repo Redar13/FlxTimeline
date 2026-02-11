@@ -1,16 +1,24 @@
 {
-    "lineEnds": {
-        "leftCurly": "both",
-        "rightCurly": "both",
-        "emptyCurly": "break",
-        "objectLiteralCurly": {
-            "leftCurly": "after"
-        }
-    },
-    "sameLine": {
-        "ifElse": "next",
-        "doWhile": "next",
-        "tryBody": "next",
-        "tryCatch": "next"
-    }
+	"lineEnds": {
+		"leftCurly": "both",
+		"rightCurly": "both",
+		"emptyCurly": "noBreak",
+		"typedefCurly": {
+			"leftCurly": "after"
+		},
+		"objectLiteralCurly": {
+			"leftCurly": "after"
+		},
+		"metadataFunction": "after",
+		"metadataVar": "after"
+	},
+	"sameLine": {
+		"ifElse": "next",
+		"doWhile": "next",
+		"tryBody": "next",
+		"tryCatch": "next"
+	},
+	"indentation": {
+		"character": "tab"
+	}
 }
